@@ -581,8 +581,11 @@ class Shazam(Request):
         signatures = [signature_generator.get_next_signature()]
         while True:
             latest_signature = signature_generator.get_next_signature()
+            print(latest_signature)
             if not latest_signature:
+                print("No more signatures to process")
                 break
+            print("appending")
             signatures.append(latest_signature)
 
         # while len(signature_generator.input_pending_processing) < 128:
@@ -597,6 +600,6 @@ class Shazam(Request):
         for signature in tqdm.tqdm(
             signatures, total=len(signatures), desc=f"Querying shazam for {len(signatures)}..."
         ):
-            next_result = await self.send_recognize_request_v2(signature)
+            next_result = await self.send_recognize_request(signature)
             results.append(next_result)
         return results
