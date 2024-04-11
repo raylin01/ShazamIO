@@ -7,6 +7,8 @@ from typing import Optional
 from aiohttp_retry import ExponentialRetry
 from pydub import AudioSegment
 from shazamio_core import Recognizer, Signature
+from typing import Dict, Any, Union, List
+import tqdm
 
 from .client import HTTPClient
 from .converter import Converter, GeoService
@@ -563,3 +565,38 @@ class Shazam(Request):
             proxy=proxy,
             json=data,
         )
+
+    async def recognize_songs(self, data: Union[str, pathlib.Path, bytes, bytearray, AudioSegment]) -> List[
+        Dict[str, Any]]:
+        """
+        Creating multiple song signatures based on a file and then mapping them to Shazan.
+        Answers questions like "Where did this hella amazing sounding remix come from?"
+        :param data: Path to song file or bytes
+        :return: A list of dicts about the songs that were found.
+            Maybe some kind of validation can be done on it?
+        """
+        song = await get_song(data=data)
+        audio = Converter.normalize_audio_data(song)
+        signature_generator = Converter.create_signature_generator(audio)
+        signatures = [signature_generator.get_next_signature()]
+        while True:
+            latest_signature = signature_generator.get_next_signature()
+            if not latest_signature:
+                break
+            signatures.append(latest_signature)
+
+        # while len(signature_generator.input_pending_processing) < 128:
+        #     latest_signature = signatures[-1]
+        #     while not latest_signature:
+        #         latest_signature = signature_generator.get_next_signature()
+        #     signatures.append(latest_signature)
+
+        print(f"Number of signatures found: {len(signatures)}")
+
+        results = []
+        for signature in tqdm.tqdm(
+            signatures, total=len(signatures), desc=f"Querying shazam for {len(signatures)}..."
+        ):
+            next_result = await self.send_recognize_request_v2(signature)
+            results.append(next_result)
+        return results
