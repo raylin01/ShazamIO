@@ -2,8 +2,8 @@ from typing import Generic
 from typing import Optional
 from typing import TypeVar
 
-from pydantic import BaseModel
-from pydantic.generics import GenericModel
+from pydantic.v1 import BaseModel
+from pydantic.v1.generics import GenericModel
 
 
 T = TypeVar("T", bound=BaseModel)

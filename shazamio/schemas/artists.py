@@ -4,8 +4,8 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic.v1 import BaseModel
+from pydantic.v1 import Field
 
 from shazamio.schemas.artist.views.full_albums import FullAlbumsModel
 from shazamio.schemas.artist.views.last_release import LastReleaseModel
